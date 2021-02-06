@@ -10,9 +10,9 @@ end
 title(Titl,'FontName','Times','LineWidth',2,'FontWeight','bold','FontSize',12);
  xlabel(xLabl,'FontName','Times','LineWidth',2,'FontWeight','bold','FontSize',12);
 ylabel(yLabl,'FontName','Times','LineWidth',2,'FontWeight','bold','FontSize',12);
-legend(lgnd,'FontName','Times','LineWidth',2,'FontWeight','bold','FontSize',12,'Location','NorthEastOutside');
+legend(lgnd,'FontName','Times','LineWidth',2,'FontWeight','bold','FontSize',12,'Location','NorthOutside');
 xlim([0 sz+1])
-set(gcf,'units','normalized','outerposition',[0 0 1 1])
+% set(gcf,'units','normalized','outerposition',[0 0 1 1])
 % export_fig(['figures/' Titl] ,'-jpg',res)
 % saveas(gca,['Images\' Titl '.png'])
 

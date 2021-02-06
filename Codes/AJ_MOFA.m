@@ -21,8 +21,8 @@ mutateRatio=0.5;
 
 Minimization = inf;
 Moved = 0;
-CF = 2; % compansation factor 
-jumbingCF=2; % jumping compansation factor
+CF = 2; % compansation factor
+jumbingCF=4; % jumping compansation factor..... 4 is the best value
 EA = [];
 
 m   = 2;          % number of objectives
@@ -31,12 +31,12 @@ AllTestProblems = {'SCH','FON','POL','KUR','ZDT1','ZDT2','ZDT3','ZDT4','ZDT6'};
 AllSeeds = 10;
 AllIteration = length(AllTestProblems) * AllSeeds;
 timer = 0;
-for c=1:9
+for c=3:3
     TestProb =  AllTestProblems{c}
-    n=inp(c,1);
+    n=inp(1,1);
     [d,Lb,Ub] = RangeOfTestFunction(TestProb);
     scale = abs(Ub-Lb);
-    for seed = 1:10
+    for seed = 1:1
         waitbar(0,h,['problem: ' TestProb ' seed: ' num2str(seed)]);
         rng(seed)
         %%%%
@@ -51,7 +51,7 @@ for c=1:9
         Leader = Sol(randi(n),:);
         %figure
         %% % Update moves and move to the brighter/more attractive
-        for t = 1 : inp(c,2)
+        for t = 1 : inp(1,2)
             %            CF=exp(1/t);
             disp(t)
             Sol_old = Sol;
@@ -59,7 +59,7 @@ for c=1:9
             for i = 1 : n
                 for j = 1 : n
                     steps    = alpha .* (rand(1,d)-0.5) .* scale;
-                    if all(f(i,:) <= f(j,:)) && any(f(i,:) < f(j,:))
+                    if all(f(i,:) >= f(j,:)) && any(f(i,:) > f(j,:))
                         r        = sqrt(sum((Sol(i,:) - Sol(j,:)).^2));
                         beta     = beta0 * exp(-gamma*r.^2);
                         Sol(i,:) = Sol(i,:) + CF * beta * (Sol(j,:)-Sol(i,:)) + steps;
@@ -68,17 +68,19 @@ for c=1:9
                     end
                 end
                 if Moved == 0   % if no one dominated solutions can be found
-                    for fi = 1 : n
-                        fc(fi,:) = TestFunctions(Sol(fi,:),TestProb);
-                    end
+                    %                     for fi = 1 : n
+                    %                         fc(fi,:) = TestFunctions(Sol(fi,:),TestProb);
+                    %                     end
+                    fc = f;
                     % new in AJ-MOFA
                     % select random objective and create pdf based on it
                     randObj=randi(m);
                     WW=fc(:,randObj);
                     WW=(WW-min(WW))./(max(WW)-min(WW));
                     idx=fortune_wheel(1./WW);
-                    gStar=Sol(idx,:); % Gstar 
-                % replace the following formula with jumping method
+                    idx(idx==-1)=randi(length(WW));
+                    gStar=Sol(idx,:); % Gstar
+                    % replace the following formula with jumping method
                     % Sol(i,:) =Sol(i,:)+ C(1) * gStar + C(2) * Leader + steps;
                     %%%%%%% jumping - new in AJ-MOFA
                     if rand<exp(1-10*(t/tMax))
@@ -87,29 +89,34 @@ for c=1:9
                         Sol(i,:) =Sol(i,:)+ jumbingCF * rand(size(Sol(i,:))).* (Leader-Sol(i,:)) ;
                     end
                     Sol(i,:) = simplebounds(Sol(i,:),Lb,Ub);
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb)
                     Minimization = inf;
                 else
                     Moved = 0;  % Initilize for next firefly
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb);
                 end
                 %% new added
-                % novel uniform-gaussian mutation 
+                % novel uniform-gaussian mutation
                 mutateProb=exp(1-10*(t/tMax));
                 if rand <mutateProb
                     Sol(i,:)=myMutation(Sol(i,:),mutateRatio,TestProb,Lb,Ub);
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb);
                 end
-                % gaussian mutation 
+                % gaussian mutation
                 if rand<mutateProb
                     Sol(i,:)=normrnd(Sol(i,:),(Ub-Lb)/20);
                     Sol(i,:) = simplebounds(Sol(i,:),Lb,Ub);
-                end 
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb);
+                end
                 %% end new added
             end % for i=1:n
-
+            
             %% Evalute the fitness/function values of the new population
             Sol_new = Sol;
-            for i = 1 :n
-                f_new(i,:) = TestFunctions(Sol_new(i,:),TestProb);
-            end
+            f_new = f;
+%             for i = 1 :n
+%                 f_new(i,:) = TestFunctions(Sol_new(i,:),TestProb);
+%             end
             %% It's very important to combine both populations, otherwise,
             % the results may look odd and will be very inefficient.
             % The combined population consits of both the old and new solutions
@@ -134,7 +141,7 @@ for c=1:9
                 if EA_Capacity > n
                     difference = EA_Capacity - n;
                     for diff = 1 : difference
-                        % replacing the following formula by using 
+                        % replacing the following formula by using
                         % roulette wheel instead
                         % ~,I] =min(EA(:,end));
                         fff=1./EA(:,end);
@@ -158,11 +165,11 @@ for c=1:9
             %end
         end % End of t loop (up to tMax) and end of the main CFMOFA loop
         
-        dir=[cd '/../EXP_results/dev_mut_CFMOFA_' TestProb]
-%         if ~exist(dir)
-%             mkdir(dir);
-%         end
-%         
+        dir=[cd '/../fixed AJ2/dev_mut_CFMOFA_' TestProb]
+                if ~exist(dir)
+                    mkdir(dir);
+                end
+        %
         save([dir '/seed-' num2str(seed) '.mat'],'f','Sol','EA');
         
         %saveas(gcf,['CFMOFA_' num2str(seed) '_.png'])

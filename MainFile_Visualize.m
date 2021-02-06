@@ -37,9 +37,16 @@ AllGenDis_fa=[];
 AllGenDis_df=[];
 AllGenDis_N2=[];
 AllGenDis_CF=[];
+AllSC_CF_FA=[];
+AllSC_FA_CF=[];
+AllSC_fa_n2=[];
+AllSC_n2_fa=[];
+AllSC_cf_n2=[];
+AllSC_n2_cf=[];
+
 %%%
 %%
-for ccc = 1:9
+for ccc = 9:9
     TestProblem = TestProblems{ccc}
 %     TestProblem = cell2mat(TestProblem)
     TP = load ([cd '/Data/' TestProblem]);
@@ -48,9 +55,9 @@ for ccc = 1:9
         load([cd '/results_NSGA22/Mathematical Functions/Experiment/'   TestProblem '/Scenario-' num2str(se) '/Scenario-' ...
             num2str(se) '_Benchmarck-NSGA-II.mat'])
         PF_N2 = paretoFront.solutionsObjectiveValues;
-        cfmofa=load(['results/CFMOFA_' TestProblem '_' num2str(se) '_results']);
-        dcf=load(['EXP_results/dev_mut_CFMOFA_' TestProblem '/seed-' num2str(se)]);
-        mofa=load(['results/MOFA_' TestProblem '_' num2str(se) '_results']);
+        cfmofa=load(['fixed cf/CFMOFA_' TestProblem '_' num2str(se) '_results']);
+        dcf=load(['fixed AJ/dev_mut_CFMOFA_' TestProblem '/seed-' num2str(se)]);
+        mofa=load(['fixed results mofa/MOFA_' TestProblem '_' num2str(se) '_results']);
 
 %         PF_Cfmofa = EA(:,size(Sol,2)+1:size(Sol,2)+2);
         fcf=DetermineDomination(cfmofa.f);
@@ -63,6 +70,10 @@ for ccc = 1:9
         %%%
         SC           =  SetCoverage2(PF_Cfmofa,PF_N2);
         AllSC_CF_N2     =  [AllSC_CF_N2 ; SC];
+        SC           =  SetCoverage2(PF_Cfmofa,PF_MOFA);
+        AllSC_CF_FA     =  [AllSC_CF_FA ; SC];
+        SC           =  SetCoverage2(PF_MOFA,PF_Cfmofa);
+        AllSC_FA_CF     =  [AllSC_FA_CF ; SC];
         SC           =  SetCoverage2(PF_N2,PF_Cfmofa);
         AllSC_N2_CF        =  [AllSC_N2_CF ; SC];
         SC           =  SetCoverage2(PF_MOFA,PF_N2);
@@ -73,6 +84,14 @@ for ccc = 1:9
         AllSC_fa_cf        =  [AllSC_fa_cf ; SC];
         SC           =  SetCoverage2(PF_Cfmofa,PF_MOFA);
         AllSC_cf_fa        =  [AllSC_cf_fa ; SC];
+        SC           =  SetCoverage2(PF_Cfmofa,PF_N2);
+        AllSC_cf_n2        =  [AllSC_cf_n2 ; SC];
+        SC           =  SetCoverage2(PF_N2,PF_Cfmofa);
+        AllSC_n2_cf        =  [AllSC_n2_cf ; SC];
+        SC           =  SetCoverage2(PF_N2,PF_MOFA);
+        AllSC_n2_fa        =  [AllSC_n2_fa ; SC];
+        SC           =  SetCoverage2(PF_MOFA,PF_N2);
+        AllSC_fa_n2        =  [AllSC_fa_n2 ; SC];
         SC           =  SetCoverage2(PF_dmofa,PF_MOFA);
         AllSC_df_fa        =  [AllSC_df_fa ; SC];
         SC           =  SetCoverage2(PF_dmofa,PF_dmofa);
@@ -86,15 +105,20 @@ for ccc = 1:9
         SC           =  SetCoverage2(PF_N2,PF_dmofa);
         AllSC_n2_df        =  [AllSC_n2_df ; SC];
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        maxN2 = max(PF_N2,[],1);
+        maxCF = max(PF_Cfmofa,1);
+        maxFA = max(PF_MOFA,1);
+        maxDF = max(PF_dmofa,1);
+        maax = [maxN2;maxCF;maxFA;maxDF];
+        ref = max(maax,[],1);
         
-        
-        HV           =  HyperVolume(PF_N2);
+        HV           =  HyperVolume(PF_N2,ref);
         AllHV_N2        =  [AllHV_N2;HV];
-        HV           =  HyperVolume(PF_Cfmofa);
+        HV           =  HyperVolume(PF_Cfmofa,ref);
         AllHV_CF     =  [AllHV_CF;HV];
-        HV=HyperVolume(PF_MOFA);
+        HV=HyperVolume(PF_MOFA,ref);
         AllHV_fa      =[AllHV_fa;HV];
-        HV=HyperVolume(PF_dmofa);
+        HV=HyperVolume(PF_dmofa,ref);
         AllHV_df     =[AllHV_df;HV];
         %%%
         NDS          =  numberOfNonDominatedSolutions(PF_N2);
@@ -133,12 +157,16 @@ for ccc = 1:9
     
     %% set coverage
     colors = [0 0 1; 0 1 0; 1 0 0; 0.6588 0.1961 0.5373;...
-       1.0000 0.4157 0;0.3373 0.6588 0.5451];
+       1.0000 0.4157 0;0.3373 0.6588 0.5451; 0.961 0.961 0.06...
+       ;1 0 0.6;0 0 0;0.49 0.22 0.09;0.37 0.97 0.95; 0.5 0.5 0.5];
     Lgnd={'C(AJ-MOFA,MOFA)','C(MOFA,AJ-MOFA)','C(AJ-MOFA,CF-MOFA)',...
-        'C(CF-MOFA,AJ-MOFA)','C(AJ-MOFA,NSGA-II)','C(NSGA-II,AJ-MOFA)'};
+        'C(CF-MOFA,AJ-MOFA)','C(AJ-MOFA,NSGA-II)','C(NSGA-II,AJ-MOFA)',...
+        'C(CF-MOFA,MOFA)','C(MOFA,CF-MOFA)','C(MOFA,NSGA-II)','C(NSGA-II,MOFA)',...
+        'C(CF-MOFA,NSGA-II)','C(NSGA-II,CF-MOFA)'};
     figure;
     boxplot([AllSC_df_fa,AllSC_fa_df,AllSC_df_cf,AllSC_cf_df,...
-        AllSC_df_n2,AllSC_n2_df],'Labels',{},'Colors',colors);
+        AllSC_df_n2,AllSC_n2_df,AllSC_CF_FA,AllSC_fa_cf,AllSC_fa_n2,...
+        AllSC_n2_fa,AllSC_cf_n2,AllSC_n2_cf],'Labels',{},'Colors',colors);
    
     boxes = findobj(gca, 'Tag', 'Box');
     legend(boxes([end:-1:1]), Lgnd,'Location','NorthEastOutside');

@@ -1,15 +1,15 @@
 function f = mofa(inp)
 
 if nargin < 1
-    inp = [100 25;
-        100 50 ;
-        100 50;
-        150 75;
-        100 50;
-        100 50;
-        100 50;
-        100 50;
-        100 50
+    inp = [100 200;
+        100 200 ;
+        100 200;
+        150 200;
+        100 200;
+        100 200;
+        100 200;
+        100 200;
+        100 200
         ];
 end
 
@@ -36,7 +36,7 @@ AllSeeds = 10;
 AllIteration = length(AllTestProblems) * AllSeeds;
 timer = 0;
 
-for c=5:9
+for c=1:9
     TestProb =  AllTestProblems{c}
     n=inp(c,1);
     tMax=inp(c,2);
@@ -63,7 +63,7 @@ for c=5:9
             for i = 1 : n
                 for j = 1 : n
                     steps    = alpha .* (rand(1,d)-0.5) .* scale;
-                    if all(f(i,:) <= f(j,:)) && any(f(i,:) < f(j,:))
+                    if all(f(i,:) >= f(j,:)) && any(f(i,:) > f(j,:))
                         r        = sqrt(sum((Sol(i,:) - Sol(j,:)).^2));
                         beta     = beta0 * exp(-gamma*r.^2);
                         Sol(i,:) = Sol(i,:) + beta * (Sol(j,:)-Sol(i,:)) + steps;
@@ -75,7 +75,7 @@ for c=5:9
                     W = rand(1,m) / m;
                     W = W / sum(W);
                     for fi = 1 : n
-                        fc(fi,:) = TestFunctions(Sol(fi,:),TestProb);
+                        fc=f;
                         WW = W(1)*fc(fi,1) + W(2)*fc(fi,2);
                         if WW < Minimization
                             Minimization = WW;
@@ -84,17 +84,20 @@ for c=5:9
                     end
                     Sol(i,:) = gStar + steps;
                     Sol(i,:) = simplebounds(Sol(i,:),Lb,Ub);
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb);
                     Minimization = inf;
                 else
                     Moved = 0;  % Initilize for next firefly
+                    f(i,:) =  TestFunctions(Sol(i,:),TestProb);
                 end
             end
             %Moved = 0;  % Initialize for next iteration
             %% Evalute the fitness/function values of the new population
             Sol_new = Sol; 
-            for i = 1 :n
-                f_new(i,:) = TestFunctions(Sol_new(i,:),TestProb);
-            end
+            f_new = f;
+%             for i = 1 :n
+%                 f_new(i,:) = TestFunctions(Sol_new(i,:),TestProb);
+%             end
             %% It's very important to combine both populations, otherwise,
             % the results may look odd and will be very inefficient.     
             % The combined population consits of both the old and new solutions
@@ -121,7 +124,7 @@ f_new
             %    drawnow;
             %end    
         end % End of t loop (up to tMax) and end of the main MOFA loop
-        save([fileparts(CurrentFolder) '/results2/MOFA_' TestProb '_' num2str(seed) '_results.mat'],'f','Sol','pareto');
+        save([fileparts(CurrentFolder) '/fixed results mofa/MOFA_' TestProb '_' num2str(seed) '_results.mat'],'f','Sol','pareto');
         %saveas(gcf,['MOFA_' num2str(seed) '_.png'])
         %close(gcf)
     end % Intialize for next function 
