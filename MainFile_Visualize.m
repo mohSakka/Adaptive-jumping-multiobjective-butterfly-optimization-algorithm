@@ -10,18 +10,18 @@ AllHV_N2 = [];
 AllHV_df = [];
 AllHV_fa = [];
 %%%
-AllSC_cf_fa=[];
-AllSC_fa_cf=[];
-AllSC_N2_fa=[];
-AllSC_fa_N2=[];
-AllSC_N2_CF=[];
-AllSC_CF_N2=[];
-AllSC_cf_df=[];
-AllSC_df_cf=[];
-AllSC_fa_df=[];
-AllSC_df_fa=[];
-AllSC_df_n2=[];
-AllSC_n2_df=[];
+AllSC_cf_n2 = [];
+AllSC_n2_cf = [];
+AllSC_CF_FA = [];
+AllSC_FA_CF = [];
+AllSC_fa_n2 = [];
+AllSC_n2_fa = [];
+AllSC_df_fa = [];
+AllSC_fa_df = [];
+AllSC_df_cf = [];
+AllSC_cf_df = [];
+AllSC_df_n2 = [];
+AllSC_n2_df = [];
 %%%
 AllNDS_fa=[];
 AllNDS_N2=[];
@@ -37,16 +37,11 @@ AllGenDis_fa=[];
 AllGenDis_df=[];
 AllGenDis_N2=[];
 AllGenDis_CF=[];
-AllSC_CF_FA=[];
-AllSC_FA_CF=[];
-AllSC_fa_n2=[];
-AllSC_n2_fa=[];
-AllSC_cf_n2=[];
-AllSC_n2_cf=[];
+
 
 %%%
 %%
-for ccc = 9:9
+for ccc = 1:9
     TestProblem = TestProblems{ccc}
 %     TestProblem = cell2mat(TestProblem)
     TP = load ([cd '/Data/' TestProblem]);
@@ -69,29 +64,17 @@ for ccc = 9:9
         %%
         %%%
         SC           =  SetCoverage2(PF_Cfmofa,PF_N2);
-        AllSC_CF_N2     =  [AllSC_CF_N2 ; SC];
+        AllSC_cf_n2     =  [AllSC_cf_n2 ; SC];
         SC           =  SetCoverage2(PF_Cfmofa,PF_MOFA);
         AllSC_CF_FA     =  [AllSC_CF_FA ; SC];
         SC           =  SetCoverage2(PF_MOFA,PF_Cfmofa);
         AllSC_FA_CF     =  [AllSC_FA_CF ; SC];
         SC           =  SetCoverage2(PF_N2,PF_Cfmofa);
-        AllSC_N2_CF        =  [AllSC_N2_CF ; SC];
-        SC           =  SetCoverage2(PF_MOFA,PF_N2);
-        AllSC_fa_N2        =  [AllSC_fa_N2 ; SC];
-        SC           =  SetCoverage2(PF_N2,PF_MOFA);
-        AllSC_N2_fa        =  [AllSC_N2_fa ; SC];
-        SC           =  SetCoverage2(PF_MOFA,PF_Cfmofa);
-        AllSC_fa_cf        =  [AllSC_fa_cf ; SC];
-        SC           =  SetCoverage2(PF_Cfmofa,PF_MOFA);
-        AllSC_cf_fa        =  [AllSC_cf_fa ; SC];
-        SC           =  SetCoverage2(PF_Cfmofa,PF_N2);
-        AllSC_cf_n2        =  [AllSC_cf_n2 ; SC];
-        SC           =  SetCoverage2(PF_N2,PF_Cfmofa);
         AllSC_n2_cf        =  [AllSC_n2_cf ; SC];
-        SC           =  SetCoverage2(PF_N2,PF_MOFA);
-        AllSC_n2_fa        =  [AllSC_n2_fa ; SC];
         SC           =  SetCoverage2(PF_MOFA,PF_N2);
         AllSC_fa_n2        =  [AllSC_fa_n2 ; SC];
+        SC           =  SetCoverage2(PF_N2,PF_MOFA);
+        AllSC_n2_fa        =  [AllSC_n2_fa ; SC];
         SC           =  SetCoverage2(PF_dmofa,PF_MOFA);
         AllSC_df_fa        =  [AllSC_df_fa ; SC];
         SC           =  SetCoverage2(PF_dmofa,PF_dmofa);
@@ -106,9 +89,9 @@ for ccc = 9:9
         AllSC_n2_df        =  [AllSC_n2_df ; SC];
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         maxN2 = max(PF_N2,[],1);
-        maxCF = max(PF_Cfmofa,1);
-        maxFA = max(PF_MOFA,1);
-        maxDF = max(PF_dmofa,1);
+        maxCF = max(PF_Cfmofa,[],1);
+        maxFA = max(PF_MOFA,[],1);
+        maxDF = max(PF_dmofa,[],1);
         maax = [maxN2;maxCF;maxFA;maxDF];
         ref = max(maax,[],1);
         
@@ -164,10 +147,13 @@ for ccc = 9:9
         'C(CF-MOFA,MOFA)','C(MOFA,CF-MOFA)','C(MOFA,NSGA-II)','C(NSGA-II,MOFA)',...
         'C(CF-MOFA,NSGA-II)','C(NSGA-II,CF-MOFA)'};
     figure;
+    try
     boxplot([AllSC_df_fa,AllSC_fa_df,AllSC_df_cf,AllSC_cf_df,...
-        AllSC_df_n2,AllSC_n2_df,AllSC_CF_FA,AllSC_fa_cf,AllSC_fa_n2,...
+        AllSC_df_n2,AllSC_n2_df,AllSC_CF_FA,AllSC_FA_CF,AllSC_fa_n2,...
         AllSC_n2_fa,AllSC_cf_n2,AllSC_n2_cf],'Labels',{},'Colors',colors);
-   
+    catch
+        disp('jhjh');
+    end
     boxes = findobj(gca, 'Tag', 'Box');
     legend(boxes([end:-1:1]), Lgnd,'Location','NorthEastOutside');
     title(['Test Problem : ' TestProblem  '___SetCoverage']);  
@@ -229,18 +215,19 @@ AllHV_N2 = [];
 AllHV_df = [];
 AllHV_fa = [];
 %%%
-AllSC_cf_fa=[];
-AllSC_fa_cf=[];
-AllSC_N2_fa=[];
-AllSC_fa_N2=[];
-AllSC_N2_CF=[];
-AllSC_cf_df=[];
-AllSC_df_cf=[];
-AllSC_fa_df=[];
-AllSC_df_fa=[];
-AllSC_df_n2=[];
-AllSC_n2_df=[];
-AllSC_CF_N2=[];
+%%%
+AllSC_cf_n2 = [];
+AllSC_n2_cf = [];
+AllSC_CF_FA = [];
+AllSC_FA_CF = [];
+AllSC_fa_n2 = [];
+AllSC_n2_fa = [];
+AllSC_df_fa = [];
+AllSC_fa_df = [];
+AllSC_df_cf = [];
+AllSC_cf_df = [];
+AllSC_df_n2 = [];
+AllSC_n2_df = [];
 %%%
 AllNDS_fa=[];
 AllNDS_N2=[];

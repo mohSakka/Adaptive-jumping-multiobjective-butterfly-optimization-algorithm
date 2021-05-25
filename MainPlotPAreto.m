@@ -6,8 +6,8 @@ addpath([cd '/Codes']);
 TestProblems = {'SCH','FON','POL','KUR','ZDT1','ZDT2','ZDT3','ZDT4','ZDT6'};
 %%%
 %% select problem and scenario number 
-pn=7; % problem number 
-sn=10; % scenario number 
+pn=1; % problem number 
+sn=1; % scenario number 
 %% loading data
     TestProblem = TestProblems{pn};
     TP = load ([cd '/Data/' TestProblem]);
