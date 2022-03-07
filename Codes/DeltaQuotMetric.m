@@ -18,7 +18,8 @@ end
 d = mean(di); % For delta' metric
 % OR
 % d = max(di); % For M3* metric
-
+if (numOfSolsInS-1)~=0
 delta = sum(abs(di-d))/(numOfSolsInS-1);
-
+else
+   delta =  sum(abs(di-d))/eps;
 end

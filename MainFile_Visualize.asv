@@ -41,7 +41,7 @@ AllGenDis_CF=[];
 
 %%%
 %%
-for ccc = 9:9
+for ccc = 1:9
     TestProblem = TestProblems{ccc}
 %     TestProblem = cell2mat(TestProblem)
     TP = load ([cd '/Data/' TestProblem]);
